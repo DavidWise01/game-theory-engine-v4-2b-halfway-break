@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>v4.2b Halfway Break</title>
+<style>
+body{margin:0;background:#050711;color:#e5e7eb;font-family:system-ui}
+header{padding:22px;background:#0f172a;border-bottom:1px solid #2e3a55}
+main{display:grid;grid-template-columns:320px 1fr 360px;gap:16px;padding:16px}
+section{background:#0f172a;border:1px solid #2e3a55;border-radius:16px;padding:16px}
+button{width:100%;padding:11px;margin:6px 0;background:#172033;color:white;border:1px solid #2e3a55;border-radius:10px;font-weight:800}
+.track{height:18px;background:#070914;border:1px solid #2e3a55;border-radius:99px;overflow:hidden;margin:12px 0}
+.bar{height:100%;width:0%;background:linear-gradient(90deg,#93c5fd,#c084fc,#86efac)}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:#111827;border:1px solid #2e3a55;border-radius:12px;padding:12px}
+.metric{font-size:28px;font-weight:900}
+pre{background:#070914;border:1px solid #2e3a55;border-radius:10px;padding:10px;max-height:430px;overflow:auto}
+</style></head>
+<body>
+<header><h1>v4.2b Multi-Drift — Halfway Break Patch</h1><div>No first-tick 1.00. Runs in .01 increments and pauses at .50.</div></header>
+<main>
+<section><h2>Controls</h2><button onclick="runHalf()">Run to Halfway</button><button onclick="resume()">Resume to 1.00</button><button onclick="step()">Step Once</button><button onclick="reset()">Reset</button><pre>4 cores:
+GameCore
+CourtCore
+WitnessCore
+DriftCore
+
++2% drift
+-2% gradient
+.01 bounded increment
+break at .50</pre></section>
+<section><h2>Runtime</h2><div class="metrics"><div class="card"><div class="metric" id="score">0.00</div><div>score</div></div><div class="card"><div class="metric" id="tick">0</div><div>tick</div></div><div class="card"><div class="metric" id="drift">0.020</div><div>drift</div></div><div class="card"><div class="metric" id="status">idle</div><div>status</div></div></div><div class="track"><div class="bar" id="bar"></div></div><pre id="event"></pre></section>
+<section><h2>History</h2><pre id="history"></pre></section>
+</main>
+<script>
+let s;
+function reset(){s={score:0,tick:0,drift:0.02,paused:false,history:[],belief:0.46};render({status:"idle"});}
+function step(){
+ if(s.score>=1){render({status:"complete"});return;}
+ s.tick++;
+ const court_pressure=Math.min(0.012,Math.max(0,(1-s.score)*0.006+0.004));
+ const persuasion_shift=0.0015*(1-s.drift);
+ const coherence=Math.min(1,s.score+court_pressure);
+ const veracity=0.55+s.belief*0.30;
+ const contradiction=Math.max(0,1-veracity);
+ const judged_delta=Math.min(0.01,Math.max(0,coherence*.006+veracity*.004-contradiction*.002));
+ s.drift+=((0.02*(0.5-s.score))+(-0.02*(s.score-1.0)))*0.01;
+ s.drift=Math.max(0,Math.min(0.02,s.drift));
+ const delta=Math.min(0.01,Math.max(0.001,judged_delta+persuasion_shift*.05));
+ s.score=Math.min(1,s.score+delta);
+ let status="running";
+ if(!s.paused&&s.score>=0.5){s.paused=true;status="halfway_break";}
+ if(s.score>=1)status="complete";
+ const e={tick:s.tick,status,score:+s.score.toFixed(4),delta:+delta.toFixed(4),drift:+s.drift.toFixed(5),court_pressure:+court_pressure.toFixed(5),persuasion_shift:+persuasion_shift.toFixed(5),witness:{coherence:+coherence.toFixed(5),veracity:+veracity.toFixed(5),contradiction:+contradiction.toFixed(5),judged_delta:+judged_delta.toFixed(5)}};
+ s.history.push(e);render(e);
+}
+function runHalf(){const t=setInterval(()=>{if(s.paused||s.score>=1){clearInterval(t);return;}step();},30);}
+function resume(){const t=setInterval(()=>{if(s.score>=1){clearInterval(t);return;}step();},20);}
+function render(e){score.textContent=s.score.toFixed(2);tick.textContent=s.tick;drift.textContent=s.drift.toFixed(3);status.textContent=e.status||"running";bar.style.width=(s.score*100)+"%";event.textContent=JSON.stringify(e,null,2);history.textContent=JSON.stringify(s.history.slice(-30),null,2);}
+reset();
+</script>
+</body></html>

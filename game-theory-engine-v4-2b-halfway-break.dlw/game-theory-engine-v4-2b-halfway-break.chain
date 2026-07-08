@@ -4,6 +4,6 @@ slug  : game-theory-engine-v4-2b-halfway-break
 seal  : 06dde831a41d1a2b26f9abf9ab4a37ff3afb7a75ebcefd0a27a24640b6756c56
 prev  : a057b843e28686bb5913d27e55c28bb5a53111f0881d7e85e88188de01b826ea
 link  : a58d142f9ba8341822d9fb0b1a13a610fd3e5ab5af2c0ab7e9d2e348dbf861e6
-head  : 3447d3a0533aaf1e29a8bdc67a9774884fb3ae9dbc8a17064b7a008ca3c4ec90
+head  : 13f9ace173ef2e60af38912ba329b4afcb5a38b84a0e4495e8d30327f8c99cc2
 
 — the tether: link = sha256(index|slug|seal|prev). the chain head commits to the whole corpus.
